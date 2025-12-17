@@ -13,10 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+import os
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.http import JsonResponse
 from . import views
+
 
 router = DefaultRouter()
 router.register(r'teams', views.TeamViewSet, basename='team')
@@ -25,8 +29,22 @@ router.register(r'activities', views.ActivityViewSet, basename='activity')
 router.register(r'workouts', views.WorkoutViewSet, basename='workout')
 router.register(r'leaderboard', views.LeaderboardViewSet, basename='leaderboard')
 
+# Helper view to show the full API endpoint URLs using $CODESPACE_NAME
+def api_urls(request):
+    codespace_name = os.environ.get('CODESPACE_NAME', 'localhost')
+    base_url = f"https://{codespace_name}-8000.app.github.dev/api/"
+    endpoints = {
+        'teams': base_url + 'teams/',
+        'users': base_url + 'users/',
+        'activities': base_url + 'activities/',
+        'workouts': base_url + 'workouts/',
+        'leaderboard': base_url + 'leaderboard/',
+    }
+    return JsonResponse({'api_endpoints': endpoints})
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api-urls/', api_urls, name='api-urls'),
     path('', views.api_root, name='api-root'),
 ]
